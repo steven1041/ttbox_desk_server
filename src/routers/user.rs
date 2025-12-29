@@ -2,7 +2,7 @@ use rinja::Template;
 use salvo::oapi::extract::*;
 use salvo::prelude::*;
 use sea_orm::{ActiveModelTrait, EntityTrait, Set, QueryFilter, QuerySelect, ColumnTrait, PaginatorTrait};
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use ulid::Ulid;
 use validator::Validate;
 use crate::hoops::jwt;

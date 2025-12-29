@@ -14,6 +14,7 @@ pub struct JwtClaims {
 }
 
 impl JwtClaims {
+    #[allow(dead_code)]
     pub fn user_id(&self) -> &str {
         &self.uid
     }

@@ -31,6 +31,7 @@ where
     }
 }
 
+#[allow(dead_code)]
 pub fn deserialize_primitive_datetime<'de, D>(
     deserializer: D,
 ) -> Result<PrimitiveDateTime, D::Error>
@@ -43,6 +44,7 @@ where
     Ok(PrimitiveDateTime::new(offset_dt.date(), offset_dt.time()))
 }
 
+#[allow(dead_code)]
 pub fn deserialize_optional_primitive_datetime<'de, D>(
     deserializer: D,
 ) -> Result<Option<PrimitiveDateTime>, D::Error>
@@ -81,12 +83,14 @@ pub struct SafeUser {
 }
 
 #[derive(Deserialize, ToSchema, Debug)]
+#[allow(dead_code)]
 pub struct RegisterUser {
     pub email: String,
     pub password: String,
 }
 
 #[derive(Deserialize, ToSchema, Debug)]
+#[allow(dead_code)]
 pub struct UpdateUser {
     pub email: Option<String>,
     pub password: Option<String>,

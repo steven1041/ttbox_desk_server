@@ -8,7 +8,8 @@ readme = "./README.md"
 [dependencies]
 anyhow = "1"
 figment = { version = "0.10", features = ["env", "toml"] }
-jsonwebtoken = {version = "10", features = ["rust_crypto"]}
+# 使用预编译的加密库，避免编译 ring
+jsonwebtoken = {version = "10", default-features = false, features = ["use_pem"]}
 rust-embed = "8"
 salvo = {version = "0.84", features = ["anyhow", "cookie", "cors", "jwt-auth", "oapi", "serve-static", "rustls", "logging", "test"]}
 serde = "1"
@@ -30,3 +31,12 @@ rand = "0.9"
 base64 = "0.22"
 lazy_static = "1.4"
 regex = "1.10"
+
+# Linux 平台优化配置
+[target.x86_64-unknown-linux-gnu]
+# 使用静态链接，减少运行时依赖
+rustflags = ["-C", "target-feature=+crt-static"]
+
+# ARM64 Linux 平台
+[target.aarch64-unknown-linux-gnu]
+rustflags = ["-C", "target-feature=+crt-static"]
