@@ -1,7 +1,7 @@
 listen_addr = "127.0.0.1:8008"
 
 [db]
-url = "mysql://root:root@localhost/ttbox_desk"
+url = "mysql://ttbox_desk:ELaH72fGz3zfXXT6@127.0.0.1/ttbox_desk"
 
 [jwt]
 secret = "yoursecret"
