@@ -1,0 +1,69 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        toolchain: stable
+        cache: true
+    
+    - name: Build release
+      run: cargo build --release
+    
+    - name: Upload artifact (v4)
+      uses: actions/upload-artifact@v4
+      with:
+        name: ttbox_salvo
+        path: target/release/ttbox_salvo
+        retention-days: 7
+        compression-level: 6
+  
+  deploy:
+    name: Deploy to Server
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download artifact (v4)
+      uses: actions/download-artifact@v4
+      with:
+        name: ttbox_salvo
+    
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          # 停止服务
+          sudo systemctl stop ttbox_salvo || true
+          
+          # 备份旧版本
+          sudo cp /opt/ttbox/ttbox_salvo /opt/ttbox/ttbox_salvo.backup.$(date +%Y%m%d_%H%M%S) || true
+          
+          # 上传新文件
+          # 注意：文件已通过 SSH 操作传输
+          
+          # 设置权限
+          sudo chmod +x /opt/ttbox/ttbox_salvo
+          
+          # 启动服务
+          sudo systemctl start ttbox_salvo
+          
+          # 检查状态
+          sudo systemctl status ttbox_salvo
