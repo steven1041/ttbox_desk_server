@@ -177,17 +177,6 @@ jobs:
         retention-days: 30
         compression-level: 6
     
-    - name: Get version
-      id: version
-      run: |
-        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-          VERSION=${{ github.ref_name }}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-        else
-          VERSION="dev-$(date +%Y%m%d-%H%M%S)"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-        fi
-    
     - name: Create Release
       if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main')
       uses: softprops/action-gh-release@v1
@@ -197,9 +186,13 @@ jobs:
         prerelease: false
         generate_release_notes: true
         tag_name: ${{ steps.version.outputs.version }}
-        name: TTBox Salvo v${{ steps.version.outputs.version }}
+        name: TTBox Salvo ${{ steps.version.outputs.version }}
         body: |
-          ## 下载和安装
+          ## 🚀 自动发布版本 ${{ steps.version.outputs.version }}
+          
+          这是自动创建的最新版本，包含了最新的代码更改。
+          
+          ### 📦 下载和安装
           
           ### 下载文件
           - `ttbox_salvo-linux.tar.gz` - Linux 发布包
@@ -218,6 +211,10 @@ jobs:
           
           ### 详细文档
           请查看 [GITHUB_WORKFLOW.md](https://github.com/${{ github.repository }}/blob/main/GITHUB_WORKFLOW.md) 了解更多部署信息。
+          
+          ---
+          
+          **注意**: 此版本由GitHub Actions自动创建。
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
