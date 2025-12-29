@@ -129,7 +129,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ttbox_salvo-linux
+        name: ttbox_salvo-linux-${{ github.run_number }}
         path: ttbox_salvo-linux.tar.gz
         retention-days: 30
         compression-level: 6
