@@ -153,6 +153,28 @@ jobs:
         draft: false
         prerelease: false
         generate_release_notes: true
+        tag_name: ${{ steps.version.outputs.version }}
+        name: TTBox Salvo v${{ steps.version.outputs.version }}
+        body: |
+          ## 下载和安装
+          
+          ### 下载文件
+          - `ttbox_salvo-linux.tar.gz` - Linux 发布包
+          
+          ### 部署方法
+          ```bash
+          # 1. 上传到服务器
+          scp ttbox_salvo-linux.tar.gz user@server:/tmp/
+          
+          # 2. 解压
+          tar -xzf ttbox_salvo-linux.tar.gz
+          
+          # 3. 运行部署脚本
+          sudo ./deploy.sh
+          ```
+          
+          ### 详细文档
+          请查看 [GITHUB_WORKFLOW.md](https://github.com/${{ github.repository }}/blob/main/GITHUB_WORKFLOW.md) 了解更多部署信息。
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
