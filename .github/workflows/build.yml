@@ -14,10 +14,14 @@ jobs:
   build-linux:
     name: Build Linux Binary
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     
     - name: Install Rust toolchain
       uses: actions-rust-lang/setup-rust-toolchain@v1
@@ -126,6 +130,45 @@ jobs:
         # 打包
         tar -czf ttbox_salvo-linux.tar.gz -C release .
     
+    - name: Generate version number
+      id: version
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          VERSION=${{ github.ref_name }}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        else
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          
+          if [[ $LATEST_TAG =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR=${BASH_REMATCH[1]}
+            MINOR=${BASH_REMATCH[2]}
+            PATCH=${BASH_REMATCH[3]}
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+          else
+            NEW_VERSION="v0.0.1"
+          fi
+          
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "Generated version: $NEW_VERSION"
+        fi
+    
+    - name: Create and push tag for main branch
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        VERSION="${{ steps.version.outputs.version }}"
+        
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        if git rev-parse "$VERSION" >/dev/null 2>&1; then
+          echo "Tag $VERSION already exists, skipping tag creation"
+        else
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin "$VERSION"
+          echo "Created and pushed tag: $VERSION"
+        fi
+    
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
@@ -146,7 +189,7 @@ jobs:
         fi
     
     - name: Create Release
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+      if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main')
       uses: softprops/action-gh-release@v1
       with:
         files: ttbox_salvo-linux.tar.gz
@@ -177,6 +220,19 @@ jobs:
           请查看 [GITHUB_WORKFLOW.md](https://github.com/${{ github.repository }}/blob/main/GITHUB_WORKFLOW.md) 了解更多部署信息。
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Update latest tag
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        git push origin :refs/tags/latest 2>/dev/null || true
+        git tag -d latest 2>/dev/null || true
+        
+        git tag -a latest -m "Latest release"
+        git push origin latest
+        echo "Updated latest tag"
     
     - name: Upload to Artifacts (for main branch)
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
